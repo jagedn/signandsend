@@ -5,10 +5,13 @@ package com.puravida.software.signandsend
  */
 class Documents {
 
-    String name
-    String location
-    String reason
+    String  name
+    String  location
+    String  reason
+    Date    signedAt
 
     static hasMany = [ pdfDocuments : PdfDocument ]
-
+    static constraints = {
+        signedAt(nullable: true)
+    }
 }
