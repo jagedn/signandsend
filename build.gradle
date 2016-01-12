@@ -1,3 +1,9 @@
+import sun.security.tools.keytool.CertAndKeyGen
+import sun.security.x509.X500Name
+import java.security.Key
+import java.security.KeyStore
+import java.security.cert.X509Certificate
+
 buildscript {
     ext {
         grailsVersion = project.grailsVersion
@@ -34,8 +40,8 @@ ext {
     gradleWrapperVersion = project.gradleWrapperVersion
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenLocal()
@@ -62,9 +68,27 @@ dependencies {
 
     testCompile "org.grails:grails-plugin-testing"
 
+    compile 'org.apache.pdfbox:pdfbox:1.8.10'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.54'
+    compile 'org.bouncycastle:bcmail-jdk15on:1.54'
+
     console "org.grails:grails-console"
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = gradleWrapperVersion
+}
+
+
+task generatePkcs12(){
+    KeyStore keyStore = KeyStore.getInstance("PKCS12")
+    keyStore.load(null, null)
+    CertAndKeyGen gen = new CertAndKeyGen("RSA","SHA1WithRSA")
+    gen.generate(1024)
+    Key key=gen.getPrivateKey();
+    X509Certificate cert=gen.getSelfCertificate(new X500Name("CN=ROOT"), (long)365*24*3600);
+    X509Certificate[] chain = new X509Certificate[1]
+    chain[0]=cert;
+    keyStore.setKeyEntry("alias", key, "password".toCharArray(), chain)
+    keyStore.store(new FileOutputStream("test.p12"), "password".toCharArray());
 }
